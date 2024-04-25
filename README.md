@@ -1,17 +1,29 @@
 # Zoomer
 
-[Boomer](https://github.com/tsoding/boomer)-like zoom application for zoomers (Zoomers = people who use wayland).
+[Boomer](https://github.com/tsoding/boomer)-like zoom application for zoomers (zoomers = people who use Wayland).
 
-## Dependencies
+## Building and running
+
+### Dependencies
 
 - [`raylib`](https://github.com/raysan5/raylib/)
 - [`grim`](https://sr.ht/~emersion/grim/)
 
-## Quick Start
+### Quick Start
 
 ```console
 $ make
 $ ./main
+```
+
+### Installing
+
+```console
+$ sudo make install
+```
+Or:
+```
+$ sudo make install INSTALL_DIR=/path/to/custom/directory
 ```
 
 ## Controls
