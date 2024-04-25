@@ -200,9 +200,10 @@ int main(void)
         float image_scale_factor = 0.0f;
 
         float wheel_move = GetMouseWheelMove();
-        bool is_shift_pressed
-            = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
-        if (is_shift_pressed) {
+        bool is_modifier_pressed = IsKeyDown(KEY_LEFT_SHIFT)
+            || IsKeyDown(KEY_RIGHT_SHIFT) || IsKeyDown(KEY_LEFT_CONTROL)
+            || IsKeyDown(KEY_RIGHT_CONTROL);
+        if (is_modifier_pressed) {
             if (wheel_move > 0)
                 flashlight_radius *= 1.2f;
             else if (wheel_move < 0)
