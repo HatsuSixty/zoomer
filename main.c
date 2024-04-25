@@ -248,5 +248,10 @@ int main(void)
 
     free(ppm);
 
+    if (unlink(GRIM_SCREENSHOT_FILE_PATH) != 0) {
+        fprintf(stderr, "WARNING: could not remove screenshot in `%s`: %s\n",
+                GRIM_SCREENSHOT_FILE_PATH, strerror(errno));
+    }
+
     return 0;
 }
