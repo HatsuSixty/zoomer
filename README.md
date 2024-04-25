@@ -30,7 +30,8 @@ $ sudo make install INSTALL_DIR=/path/to/custom/directory
 
 | Control                                          | Action                  |
 |--------------------------------------------------|-------------------------|
-| Left click                                       | Move the image.         |
+| Q                                                | Quit the application.   |
+| Left click + Mouse move                          | Move the image.         |
 | Scroll wheel                                     | Resize the image.       |
 | F                                                | Toggle flashlight.      |
 | Shift + Scroll wheel (or Control + Scroll wheel) | Change flashlight size. |
