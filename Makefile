@@ -1,7 +1,7 @@
 PKGS=raylib
 
 CFLAGS=-Wall -Wextra -std=c11 -pedantic -ggdb `pkg-config --cflags $(PKGS)`
-LIBS=`pkg-config --libs $(PKGS)`
+LIBS=`pkg-config --libs $(PKGS)` -lm
 
 main: main.o
 	$(CC) $(CFLAGS) -o zoomer main.o $(LIBS)

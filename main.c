@@ -6,8 +6,10 @@
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+#include <math.h>
 
 #include <raylib.h>
+#include <rlgl.h>
 
 #define GRIM_SCREENSHOT_FILE_PATH "/tmp/zoomer_grim_screen.ppm"
 
@@ -123,10 +125,30 @@ FILE* take_screenshot(void)
     return file;
 }
 
+void draw_circle_lines(Vector2 center, float radius, Color color, int thickness)
+{
+    rlBegin(RL_QUADS);
+    rlColor4ub(color.r, color.g, color.b, color.a);
+
+    for (int i = 0; i < 360; i += 10) {
+        rlVertex2f(center.x + cosf(DEG2RAD * i) * (radius + thickness),
+                   center.y + sinf(DEG2RAD * i) * (radius + thickness));
+        rlVertex2f(center.x + cosf(DEG2RAD * i) * radius,
+                   center.y + sinf(DEG2RAD * i) * radius);
+        rlVertex2f(center.x + cosf(DEG2RAD * (i + 10)) * radius,
+                   center.y + sinf(DEG2RAD * (i + 10)) * radius);
+        rlVertex2f(center.x + cosf(DEG2RAD * (i + 10)) * (radius + thickness),
+                   center.y + sinf(DEG2RAD * (i + 10)) * (radius + thickness));
+    }
+
+    rlEnd();
+}
+
 int main(void)
 {
     FILE* file = take_screenshot();
-    if (file == NULL) return 1;
+    if (file == NULL)
+        return 1;
 
     size_t file_size = get_file_size(file);
     char* ppm = malloc(file_size + 1);
@@ -147,10 +169,18 @@ int main(void)
         .height = image.height,
     };
 
+    bool show_flashlight = false;
+    float flashlight_radius = 200;
+
     SetExitKey(KEY_Q);
     while (!WindowShouldClose()) {
         BeginDrawing();
-        ClearBackground(DARKGRAY);
+        ClearBackground(GetColor(0x181818FF));
+
+        Vector2 mouse_pos = GetMousePosition();
+
+        if (IsKeyPressed(KEY_F))
+            show_flashlight = !show_flashlight;
 
         if (IsKeyPressed(KEY_ZERO)) {
             texture_dst_rect = (Rectangle) {
@@ -167,23 +197,32 @@ int main(void)
             texture_dst_rect.y += mouse_delta.y;
         }
 
-        float scale_factor = 0.0f;
+        float image_scale_factor = 0.0f;
 
         float wheel_move = GetMouseWheelMove();
-        if (wheel_move == 1)
-            scale_factor = 1.2f;
-        else if (wheel_move == -1)
-            scale_factor = 0.8f;
+        bool is_shift_pressed
+            = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+        if (is_shift_pressed) {
+            if (wheel_move > 0)
+                flashlight_radius *= 1.2f;
+            else if (wheel_move < 0)
+                flashlight_radius *= 0.8f;
+        } else {
+            if (wheel_move > 0)
+                image_scale_factor = 1.2f;
+            else if (wheel_move < 0)
+                image_scale_factor = 0.8f;
+        }
 
-        if (scale_factor != 0) {
-            Vector2 mouse_position = GetMousePosition();
+        if (image_scale_factor != 0) {
+            Vector2 mouse_position = mouse_pos;
             float offset_x = (mouse_position.x - texture_dst_rect.x)
                 / texture_dst_rect.width;
             float offset_y = (mouse_position.y - texture_dst_rect.y)
                 / texture_dst_rect.height;
 
-            texture_dst_rect.width *= scale_factor;
-            texture_dst_rect.height *= scale_factor;
+            texture_dst_rect.width *= image_scale_factor;
+            texture_dst_rect.height *= image_scale_factor;
 
             texture_dst_rect.x
                 = mouse_position.x - offset_x * texture_dst_rect.width;
@@ -193,6 +232,12 @@ int main(void)
 
         DrawTexturePro(texture, (Rectangle) { 0, 0, image.width, image.height },
                        texture_dst_rect, (Vector2) { 0, 0 }, 0.0f, WHITE);
+
+        float flashlight_factor = texture_dst_rect.width / image.width;
+        if (show_flashlight) {
+            draw_circle_lines(mouse_pos, flashlight_radius * flashlight_factor,
+                              Fade(BLACK, 0.7), 8000);
+        }
 
         EndDrawing();
     }
