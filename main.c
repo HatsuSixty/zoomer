@@ -1,22 +1,20 @@
 #include <ctype.h>
+#include <errno.h>
+#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
 #include <string.h>
-#include <errno.h>
-#include <stdint.h>
-#include <math.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include <raylib.h>
 #include <rlgl.h>
 
-#define GRIM_SCREENSHOT_FILE_PATH "/tmp/zoomer_grim_screen.ppm"
+#define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.ppm"
 
 Image image_from_ppm(char* ppm)
 {
-    int i;
-
     if (strncmp(ppm, "P6", 2) != 0) {
         fprintf(stderr, "ERROR: unsupported image format: `%.*s`\n", 2, ppm);
         exit(1);
@@ -27,21 +25,22 @@ Image image_from_ppm(char* ppm)
     char maximum_color_value[256] = { 0 };
 
     size_t current_offset = 3;
-    for (i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
+
+    for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
         width[i] = ppm[current_offset];
     }
     current_offset++;
 
-    for (i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
+    for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
         height[i] = ppm[current_offset];
     }
     current_offset++;
 
-    for (i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
+    for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
         maximum_color_value[i] = ppm[current_offset];
@@ -88,8 +87,7 @@ FILE* take_screenshot(void)
 {
     pid_t grim = fork();
     if (grim == 0) {
-        if (execlp("grim", "grim", "-t", "ppm", GRIM_SCREENSHOT_FILE_PATH, NULL)
-            == -1) {
+        if (execlp("grim", "grim", "-t", "ppm", SCREENSHOT_FILE_PATH, NULL) == -1) {
             fprintf(stderr, "ERROR: could not execute `grim`: %s\n",
                     strerror(errno));
             exit(1);
@@ -115,10 +113,10 @@ FILE* take_screenshot(void)
         return NULL;
     }
 
-    FILE* file = fopen(GRIM_SCREENSHOT_FILE_PATH, "r");
+    FILE* file = fopen(SCREENSHOT_FILE_PATH, "r");
     if (file == NULL) {
         fprintf(stderr, "ERROR: could not open file `%s`: %s\n",
-                GRIM_SCREENSHOT_FILE_PATH, strerror(errno));
+                SCREENSHOT_FILE_PATH, strerror(errno));
         return NULL;
     }
 
@@ -248,9 +246,9 @@ int main(void)
 
     free(ppm);
 
-    if (unlink(GRIM_SCREENSHOT_FILE_PATH) != 0) {
+    if (unlink(SCREENSHOT_FILE_PATH) != 0) {
         fprintf(stderr, "WARNING: could not remove screenshot in `%s`: %s\n",
-                GRIM_SCREENSHOT_FILE_PATH, strerror(errno));
+                SCREENSHOT_FILE_PATH, strerror(errno));
     }
 
     return 0;
