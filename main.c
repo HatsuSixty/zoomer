@@ -13,6 +13,28 @@
 
 #define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.ppm"
 
+void ppm_skip_comments(size_t* current_offset, char* ppm)
+{
+    size_t ppm_size = strlen(ppm);
+
+    if (ppm[*current_offset] == '#') {
+        while (ppm[*current_offset] != '\n') {
+            if (*current_offset >= ppm_size) {
+                fprintf(stderr, "ERROR: reached end of file while parsing comment in image\n");
+                exit(1);
+            }
+
+            *current_offset += 1;
+        }
+        *current_offset += 1;
+
+        if (*current_offset >= ppm_size) {
+            fprintf(stderr, "ERROR: reached end of file while parsing comment in image\n");
+            exit(1);
+        }
+    }
+}
+
 Image image_from_ppm(char* ppm)
 {
     if (strncmp(ppm, "P6", 2) != 0) {
@@ -26,6 +48,7 @@ Image image_from_ppm(char* ppm)
 
     size_t current_offset = 3;
 
+    ppm_skip_comments(&current_offset, ppm);
     for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
@@ -33,6 +56,7 @@ Image image_from_ppm(char* ppm)
     }
     current_offset++;
 
+    ppm_skip_comments(&current_offset, ppm);
     for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
@@ -40,6 +64,7 @@ Image image_from_ppm(char* ppm)
     }
     current_offset++;
 
+    ppm_skip_comments(&current_offset, ppm);
     for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
@@ -83,7 +108,7 @@ size_t get_file_size(FILE* file)
     return sz;
 }
 
-FILE* take_screenshot(void)
+FILE* take_screenshot_wayland(void)
 {
     pid_t grim = fork();
     if (grim == 0) {
@@ -123,6 +148,46 @@ FILE* take_screenshot(void)
     return file;
 }
 
+FILE* take_screenshot_x11(void)
+{
+    pid_t scrot = fork();
+    if (scrot == 0) {
+        if (execlp("scrot", "scrot", "-o", "-F", SCREENSHOT_FILE_PATH, NULL) == -1) {
+            fprintf(stderr, "ERROR: could not execute `scrot`: %s\n",
+                    strerror(errno));
+            exit(1);
+        }
+        exit(0);
+    }
+
+    int scrot_status = 0;
+    if (waitpid(scrot, &scrot_status, 0) == -1) {
+        fprintf(stderr, "ERROR: could not `waitpid`: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    if (!WIFEXITED(scrot_status)) {
+        fprintf(stderr, "ERROR: `scrot` subprocess exited abnormally\n");
+        return NULL;
+    }
+
+    int scrot_return_code = WEXITSTATUS(scrot_status);
+    if (scrot_return_code != 0) {
+        fprintf(stderr, "ERROR: `scrot` subprocess exited with code `%d`\n",
+                scrot_return_code);
+        return NULL;
+    }
+
+    FILE* file = fopen(SCREENSHOT_FILE_PATH, "r");
+    if (file == NULL) {
+        fprintf(stderr, "ERROR: could not open file `%s`: %s\n",
+                SCREENSHOT_FILE_PATH, strerror(errno));
+        return NULL;
+    }
+
+    return file;
+}
+
 void draw_circle_lines(Vector2 center, float radius, Color color, int thickness)
 {
     rlBegin(RL_QUADS);
@@ -140,6 +205,13 @@ void draw_circle_lines(Vector2 center, float radius, Color color, int thickness)
     }
 
     rlEnd();
+}
+
+FILE* take_screenshot(void)
+{
+    return (getenv("WAYLAND_DISPLAY") == NULL)
+        ? take_screenshot_x11()
+        : take_screenshot_wayland();
 }
 
 int main(void)
