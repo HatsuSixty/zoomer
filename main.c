@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include <raylib.h>
+#include <raymath.h>
 #include <rlgl.h>
 
 #define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.ppm"
@@ -232,11 +233,10 @@ int main(void)
     ToggleFullscreen();
 
     Texture texture = LoadTextureFromImage(image);
-    Rectangle texture_dst_rect = {
-        .x = 0,
-        .y = 0,
-        .width = image.width,
-        .height = image.height,
+
+    Camera2D camera = {
+        // .target = (Vector2) { GetScreenWidth()/2.f, GetScreenHeight()/2.f },
+        .zoom = 1.f,
     };
 
     bool show_flashlight = false;
@@ -247,68 +247,59 @@ int main(void)
         BeginDrawing();
         ClearBackground(GetColor(0x181818FF));
 
-        Vector2 mouse_pos = GetMousePosition();
+        Vector2 mouse_pos_world = GetScreenToWorld2D(GetMousePosition(), camera);
 
         if (IsKeyPressed(KEY_F))
             show_flashlight = !show_flashlight;
 
         if (IsKeyPressed(KEY_ZERO)) {
-            texture_dst_rect = (Rectangle) {
-                .x = 0,
-                .y = 0,
-                .width = image.width,
-                .height = image.height,
+            camera = (Camera2D) {
+                .target = (Vector2) { GetScreenWidth()/2.f, GetScreenHeight()/2.f },
+                .zoom = 1.f,
             };
         }
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse_delta = GetMouseDelta();
-            texture_dst_rect.x += mouse_delta.x;
-            texture_dst_rect.y += mouse_delta.y;
+            camera.target.x += -mouse_delta.x;
+            camera.target.y += -mouse_delta.y;
         }
-
-        float image_scale_factor = 0.0f;
 
         float wheel_move = GetMouseWheelMove();
         bool is_modifier_pressed = IsKeyDown(KEY_LEFT_SHIFT)
             || IsKeyDown(KEY_RIGHT_SHIFT) || IsKeyDown(KEY_LEFT_CONTROL)
             || IsKeyDown(KEY_RIGHT_CONTROL);
+
         if (is_modifier_pressed) {
             if (wheel_move > 0)
                 flashlight_radius *= 1.2f;
             else if (wheel_move < 0)
                 flashlight_radius *= 0.8f;
         } else {
+            Vector2 mouse_world_before_zoom = GetScreenToWorld2D(GetMousePosition(), camera);
+
             if (wheel_move > 0)
-                image_scale_factor = 1.2f;
+                camera.zoom *= 1.1;
             else if (wheel_move < 0)
-                image_scale_factor = 0.8f;
+                camera.zoom *= 0.9;
+
+            Vector2 mouse_world_after_zoom = GetScreenToWorld2D(GetMousePosition(), camera);
+
+            camera.target = Vector2Add(camera.target,
+                                       Vector2Subtract(mouse_world_before_zoom,
+                                                       mouse_world_after_zoom));
         }
 
-        if (image_scale_factor != 0) {
-            Vector2 mouse_position = mouse_pos;
-            float offset_x = (mouse_position.x - texture_dst_rect.x)
-                / texture_dst_rect.width;
-            float offset_y = (mouse_position.y - texture_dst_rect.y)
-                / texture_dst_rect.height;
+        BeginMode2D(camera);
 
-            texture_dst_rect.width *= image_scale_factor;
-            texture_dst_rect.height *= image_scale_factor;
+        DrawTexture(texture, 0, 0, WHITE);
 
-            texture_dst_rect.x
-                = mouse_position.x - offset_x * texture_dst_rect.width;
-            texture_dst_rect.y
-                = mouse_position.y - offset_y * texture_dst_rect.height;
-        }
-
-        DrawTexturePro(texture, (Rectangle) { 0, 0, image.width, image.height },
-                       texture_dst_rect, (Vector2) { 0, 0 }, 0.0f, WHITE);
-
-        float flashlight_factor = texture_dst_rect.width / image.width;
         if (show_flashlight) {
-            draw_circle_lines(mouse_pos, flashlight_radius * flashlight_factor,
+            draw_circle_lines(mouse_pos_world, flashlight_radius,
                               Fade(BLACK, 0.7), 8000);
         }
+
+        EndMode2D();
 
         EndDrawing();
     }
