@@ -276,8 +276,8 @@ int main(void)
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse_delta = GetMouseDelta();
-            camera.target.x += -mouse_delta.x;
-            camera.target.y += -mouse_delta.y;
+            camera.target.x += -mouse_delta.x / camera.zoom;
+            camera.target.y += -mouse_delta.y / camera.zoom;
         }
 
         float wheel_move = GetMouseWheelMove();
