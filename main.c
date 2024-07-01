@@ -235,7 +235,6 @@ int main(void)
     Texture texture = LoadTextureFromImage(image);
 
     Camera2D camera = {
-        // .target = (Vector2) { GetScreenWidth()/2.f, GetScreenHeight()/2.f },
         .zoom = 1.f,
     };
 
@@ -254,7 +253,6 @@ int main(void)
 
         if (IsKeyPressed(KEY_ZERO)) {
             camera = (Camera2D) {
-                .target = (Vector2) { GetScreenWidth()/2.f, GetScreenHeight()/2.f },
                 .zoom = 1.f,
             };
         }
