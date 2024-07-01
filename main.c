@@ -254,9 +254,10 @@ int main(void)
     };
     float camera_target_zoom = camera.zoom;
 
-    bool show_flashlight = false;
     float flashlight_radius = 200;
     float flashlight_radius_target = flashlight_radius;
+    float flashlight_opacity = 0.f;
+    float flashlight_opacity_target = flashlight_opacity;
 
     SetExitKey(KEY_Q);
     while (!WindowShouldClose()) {
@@ -266,7 +267,7 @@ int main(void)
         Vector2 mouse_pos_world = GetScreenToWorld2D(GetMousePosition(), camera);
 
         if (IsKeyPressed(KEY_F))
-            show_flashlight = !show_flashlight;
+            flashlight_opacity_target = flashlight_opacity_target > 0 ? 0.f : 1.f;
 
         if (IsKeyPressed(KEY_ZERO)) {
             camera = (Camera2D) {
@@ -314,14 +315,17 @@ int main(void)
             flashlight_radius = Lerp(flashlight_radius, flashlight_radius_target, LERP_AMOUNT);
         }
 
+        // Update flashlight opacity
+        {
+            flashlight_opacity = Lerp(flashlight_opacity, flashlight_opacity_target, LERP_AMOUNT);
+        }
+
         BeginMode2D(camera);
 
         DrawTexture(texture, 0, 0, WHITE);
 
-        if (show_flashlight) {
-            draw_circle_lines(mouse_pos_world, flashlight_radius,
-                              Fade(BLACK, 0.7), 8000);
-        }
+        draw_circle_lines(mouse_pos_world, flashlight_radius,
+                          Fade(BLACK, 0.7 * flashlight_opacity), 8000);
 
         EndMode2D();
 
