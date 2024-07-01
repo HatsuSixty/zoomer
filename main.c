@@ -13,7 +13,7 @@
 #include <rlgl.h>
 
 #define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.ppm"
-#define LERP_AMOUNT 0.02
+#define LERP_AMOUNT 0.03
 
 void ppm_skip_comments(size_t* current_offset, char* ppm)
 {
