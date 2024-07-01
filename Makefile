@@ -1,4 +1,4 @@
-PKGS=raylib
+PKGS=raylib x11 xcursor
 
 CFLAGS=-Wall -Wextra -std=c11 -pedantic -ggdb `pkg-config --cflags $(PKGS)`
 LIBS=`pkg-config --libs $(PKGS)` -lm

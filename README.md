@@ -7,6 +7,8 @@
 ### Dependencies
 
 - [`raylib`](https://github.com/raysan5/raylib/)
+- X11
+- Xcursor
 - [`grim`](https://sr.ht/~emersion/grim/) (required for Wayland support)
 - [`scrot`](https://github.com/resurrecting-open-source-projects/scrot) (required for X11 support)
 
