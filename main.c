@@ -13,6 +13,7 @@
 #include <rlgl.h>
 
 #define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.ppm"
+#define LERP_AMOUNT 0.02
 
 void ppm_skip_comments(size_t* current_offset, char* ppm)
 {
@@ -237,9 +238,11 @@ int main(void)
     Camera2D camera = {
         .zoom = 1.f,
     };
+    float camera_target_zoom = camera.zoom;
 
     bool show_flashlight = false;
     float flashlight_radius = 200;
+    float flashlight_radius_target = flashlight_radius;
 
     SetExitKey(KEY_Q);
     while (!WindowShouldClose()) {
@@ -270,22 +273,31 @@ int main(void)
 
         if (is_modifier_pressed) {
             if (wheel_move > 0)
-                flashlight_radius *= 1.2f;
+                flashlight_radius_target *= 1.2f;
             else if (wheel_move < 0)
-                flashlight_radius *= 0.8f;
+                flashlight_radius_target *= 0.8f;
         } else {
+            if (wheel_move > 0)
+                camera_target_zoom *= 1.1;
+            else if (wheel_move < 0)
+                camera_target_zoom *= 0.9;
+        }
+
+        // Update camera zoom
+        {
             Vector2 mouse_world_before_zoom = GetScreenToWorld2D(GetMousePosition(), camera);
 
-            if (wheel_move > 0)
-                camera.zoom *= 1.1;
-            else if (wheel_move < 0)
-                camera.zoom *= 0.9;
+            camera.zoom = Lerp(camera.zoom, camera_target_zoom, LERP_AMOUNT);
 
             Vector2 mouse_world_after_zoom = GetScreenToWorld2D(GetMousePosition(), camera);
-
             camera.target = Vector2Add(camera.target,
                                        Vector2Subtract(mouse_world_before_zoom,
                                                        mouse_world_after_zoom));
+        }
+
+        // Update flashlight radius
+        {
+            flashlight_radius = Lerp(flashlight_radius, flashlight_radius_target, LERP_AMOUNT);
         }
 
         BeginMode2D(camera);
