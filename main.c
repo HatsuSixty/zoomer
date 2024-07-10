@@ -193,6 +193,46 @@ FILE* take_screenshot_x11(void)
     return file;
 }
 
+FILE* take_screenshot_spectacle(void)
+{
+    pid_t spectacle = fork();
+    if (spectacle == 0) {
+        if (execlp("spectacle", "spectacle", "-b", "-n", "-o", SCREENSHOT_FILE_PATH, NULL) == -1) {
+            fprintf(stderr, "ERROR: could not execute `spectacle`: %s\n",
+                    strerror(errno));
+            exit(1);
+        }
+        exit(0);
+    }
+
+    int spectacle_status = 0;
+    if (waitpid(spectacle, &spectacle_status, 0) == -1) {
+        fprintf(stderr, "ERROR: could not `waitpid`: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    if (!WIFEXITED(spectacle_status)) {
+        fprintf(stderr, "ERROR: `spectacle` subprocess exited abnormally\n");
+        return NULL;
+    }
+
+    int spectacle_return_code = WEXITSTATUS(spectacle_status);
+    if (spectacle_return_code != 0) {
+        fprintf(stderr, "ERROR: `spectacle` subprocess exited with code `%d`\n",
+                spectacle_return_code);
+        return NULL;
+    }
+
+    FILE* file = fopen(SCREENSHOT_FILE_PATH, "r");
+    if (file == NULL) {
+        fprintf(stderr, "ERROR: could not open file `%s`: %s\n",
+                SCREENSHOT_FILE_PATH, strerror(errno));
+        return NULL;
+    }
+
+    return file;
+}
+
 void draw_circle_lines(Vector2 center, float radius, Color color, int thickness)
 {
     rlBegin(RL_QUADS);
@@ -214,9 +254,13 @@ void draw_circle_lines(Vector2 center, float radius, Color color, int thickness)
 
 FILE* take_screenshot(void)
 {
-    return (getenv("WAYLAND_DISPLAY") == NULL)
-        ? take_screenshot_x11()
-        : take_screenshot_wayland();
+    if (getenv("WAYLAND_DISPLAY") == NULL)
+        return take_screenshot_x11();
+
+    if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "KDE"))
+        return take_screenshot_spectacle();
+
+    return take_screenshot_wayland();
 }
 
 void set_loading_cursor(void)

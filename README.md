@@ -10,6 +10,7 @@
 - X11
 - Xcursor
 - [`grim`](https://sr.ht/~emersion/grim/) (required for Wayland support)
+- [`spectacle`](https://apps.kde.org/spectacle/) (required for Wayland support on Plasma)
 - [`scrot`](https://github.com/resurrecting-open-source-projects/scrot) (required for X11 support)
 
 ### Quick Start
