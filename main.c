@@ -257,7 +257,7 @@ FILE* take_screenshot(void)
     if (getenv("WAYLAND_DISPLAY") == NULL)
         return take_screenshot_x11();
 
-    if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "KDE"))
+    if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "KDE") == 0)
         return take_screenshot_spectacle();
 
     return take_screenshot_wayland();
