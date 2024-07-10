@@ -224,7 +224,11 @@ void set_loading_cursor(void)
     if (getenv("WAYLAND_DISPLAY")) return;
 
     unsigned long window = glfwGetX11Window(GetWindowHandle());
+    if (window == 0) return;
+
     void* display = glfwGetX11Display();
+    if (display == NULL) return;
+
     unsigned long cursor = XcursorLibraryLoadCursor(display, "watch");
     XDefineCursor(display, window, cursor);
 }
