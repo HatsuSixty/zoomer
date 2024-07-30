@@ -12,11 +12,11 @@
 #include <raymath.h>
 #include <rlgl.h>
 
-#include "glfw.h"
 #include "X.h"
+#include "glfw.h"
 
 #define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.ppm"
-#define LERP_AMOUNT 0.03
+#define LERP_AMOUNT 5.f
 
 void ppm_skip_comments(size_t* current_offset, char* ppm)
 {
@@ -265,13 +265,20 @@ FILE* take_screenshot(void)
 
 void set_loading_cursor(void)
 {
-    if (getenv("WAYLAND_DISPLAY")) return;
+    if (getenv("WAYLAND_DISPLAY"))
+        return;
 
-    unsigned long window = glfwGetX11Window(GetWindowHandle());
-    if (window == 0) return;
+    void* handle = GetWindowHandle();
+    if (handle == NULL)
+        return;
+
+    unsigned long window = glfwGetX11Window(handle);
+    if (window == 0)
+        return;
 
     void* display = glfwGetX11Display();
-    if (display == NULL) return;
+    if (display == NULL)
+        return;
 
     unsigned long cursor = XcursorLibraryLoadCursor(display, "watch");
     XDefineCursor(display, window, cursor);
@@ -312,6 +319,7 @@ int main(void)
         BeginDrawing();
         ClearBackground(GetColor(0x181818FF));
 
+        float dt = GetFrameTime();
         Vector2 mouse_pos_world = GetScreenToWorld2D(GetMousePosition(), camera);
 
         if (IsKeyPressed(KEY_F))
@@ -350,7 +358,7 @@ int main(void)
         {
             Vector2 mouse_world_before_zoom = GetScreenToWorld2D(GetMousePosition(), camera);
 
-            camera.zoom = Lerp(camera.zoom, camera_target_zoom, LERP_AMOUNT);
+            camera.zoom = Lerp(camera.zoom, camera_target_zoom, LERP_AMOUNT * dt);
 
             Vector2 mouse_world_after_zoom = GetScreenToWorld2D(GetMousePosition(), camera);
             camera.target = Vector2Add(camera.target,
@@ -360,12 +368,12 @@ int main(void)
 
         // Update flashlight radius
         {
-            flashlight_radius = Lerp(flashlight_radius, flashlight_radius_target, LERP_AMOUNT);
+            flashlight_radius = Lerp(flashlight_radius, flashlight_radius_target, LERP_AMOUNT * dt);
         }
 
         // Update flashlight opacity
         {
-            flashlight_opacity = Lerp(flashlight_opacity, flashlight_opacity_target, LERP_AMOUNT);
+            flashlight_opacity = Lerp(flashlight_opacity, flashlight_opacity_target, LERP_AMOUNT * dt);
         }
 
         BeginMode2D(camera);
