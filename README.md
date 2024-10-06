@@ -32,10 +32,12 @@ $ sudo make install INSTALL_DIR=/path/to/custom/directory
 
 ## Controls
 
-| Control                                          | Action                  |
-|--------------------------------------------------|-------------------------|
-| Q                                                | Quit the application.   |
-| Left click + Mouse move                          | Move the image.         |
-| Scroll wheel                                     | Resize the image.       |
-| F                                                | Toggle flashlight.      |
-| Shift + Scroll wheel (or Control + Scroll wheel) | Change flashlight size. |
+| Control                                          | Action                        |
+|--------------------------------------------------|-------------------------------|
+| Q                                                | Quit the application.         |
+| Left click + Mouse move                          | Move the camera.              |
+| Scroll wheel                                     | Increase camera zoom.         |
+| 0 (zero)                                         | Reset zoom.                   |
+| F                                                | Toggle the flashlight.        |
+| Shift + Scroll wheel (or Control + Scroll wheel) | Change the flashlight's size. |
+
