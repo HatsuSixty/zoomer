@@ -348,10 +348,12 @@ int main(void)
             || IsKeyDown(KEY_RIGHT_CONTROL);
 
         if (is_modifier_pressed) {
-            if (wheel_move > 0)
-                flashlight_radius_target *= 1.2f;
-            else if (wheel_move < 0)
-                flashlight_radius_target *= 0.8f;
+            if (flashlight_opacity_target != 0) {
+                if (wheel_move > 0)
+                    flashlight_radius_target *= 1.2f;
+                else if (wheel_move < 0)
+                    flashlight_radius_target *= 0.8f;
+            }
         } else {
             if (wheel_move > 0)
                 camera_target_zoom *= 1.1;
