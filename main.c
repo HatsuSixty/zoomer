@@ -333,6 +333,7 @@ int main(void)
             camera = (Camera2D) {
                 .zoom = 1.f,
             };
+            camera_target_zoom = 1.f;
         }
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
