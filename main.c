@@ -37,7 +37,7 @@ void ppm_skip_comments(size_t* current_offset, char* ppm)
     }
 }
 
-Image image_from_ppm(char* ppm)
+Image image_from_ppm(char* ppm, size_t file_size)
 {
     if (strncmp(ppm, "P6", 2) != 0) {
         fprintf(stderr, "ERROR: unsupported image format: `%.*s`\n", 2, ppm);
@@ -51,7 +51,7 @@ Image image_from_ppm(char* ppm)
     size_t current_offset = 3;
 
     ppm_skip_comments(&current_offset, ppm);
-    for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
+    for (int i = 0; current_offset < file_size; ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
         width[i] = ppm[current_offset];
@@ -59,7 +59,7 @@ Image image_from_ppm(char* ppm)
     current_offset++;
 
     ppm_skip_comments(&current_offset, ppm);
-    for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
+    for (int i = 0; current_offset < file_size; ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
         height[i] = ppm[current_offset];
@@ -67,7 +67,7 @@ Image image_from_ppm(char* ppm)
     current_offset++;
 
     ppm_skip_comments(&current_offset, ppm);
-    for (int i = 0; current_offset < strlen(ppm); ++current_offset, ++i) {
+    for (int i = 0; current_offset < file_size; ++current_offset, ++i) {
         if (isspace(ppm[current_offset]))
             break;
         maximum_color_value[i] = ppm[current_offset];
@@ -271,12 +271,11 @@ int main(void)
         return 1;
 
     size_t file_size = get_file_size(file);
-    char* ppm = malloc(file_size + 1);
-    ppm[file_size] = 0;
+    char* ppm = malloc(file_size);
     fread(ppm, file_size, 1, file);
     fclose(file);
 
-    Image image = image_from_ppm(ppm);
+    Image image = image_from_ppm(ppm, file_size);
 
     InitWindow(image.width, image.height, "Zoomer");
     ToggleFullscreen();
