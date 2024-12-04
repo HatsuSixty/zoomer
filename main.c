@@ -12,9 +12,6 @@
 #include <raymath.h>
 #include <rlgl.h>
 
-#include "X.h"
-#include "glfw.h"
-
 #define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.ppm"
 #define LERP_AMOUNT 5.f
 
@@ -267,27 +264,6 @@ FILE* take_screenshot(void)
     return take_screenshot_wayland();
 }
 
-void set_loading_cursor(void)
-{
-    if (getenv("WAYLAND_DISPLAY"))
-        return;
-
-    void* handle = GetWindowHandle();
-    if (handle == NULL)
-        return;
-
-    unsigned long window = glfwGetX11Window(handle);
-    if (window == 0)
-        return;
-
-    void* display = glfwGetX11Display();
-    if (display == NULL)
-        return;
-
-    unsigned long cursor = XcursorLibraryLoadCursor(display, "watch");
-    XDefineCursor(display, window, cursor);
-}
-
 int main(void)
 {
     FILE* file = take_screenshot();
@@ -304,7 +280,6 @@ int main(void)
 
     InitWindow(image.width, image.height, "Zoomer");
     ToggleFullscreen();
-    set_loading_cursor();
 
     Texture texture = LoadTextureFromImage(image);
 
