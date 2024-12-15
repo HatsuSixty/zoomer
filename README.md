@@ -6,29 +6,34 @@
 
 ### Dependencies
 
-- [`raylib`](https://github.com/raysan5/raylib/)
-- X11
-- Xcursor
+Under Linux, you will need to have these installed:
+
 - [`grim`](https://sr.ht/~emersion/grim/) (required for Wayland support)
 - [`spectacle`](https://apps.kde.org/spectacle/) (required for Wayland support on Plasma)
 - [`scrot`](https://github.com/resurrecting-open-source-projects/scrot) (required for X11 support)
 
 ### Quick Start
 
+On an MSYS2 environment or Linux, run the following commands:
+
 ```console
-$ make
-$ ./main
+$ ./build.sh
+$ ./zoomer # or zoomer.exe on Windows
 ```
 
 ### Installing
 
+Installing only works on Linux. Run:
+
 ```console
-$ sudo make install
+# ./build.sh install
 ```
 Or:
 ```
-$ sudo make install INSTALL_DIR=/path/to/custom/directory
+# INSTALL_DIR=/path/to/custom/directory ./build.sh install
 ```
+
+Uninstalling is the same process, but with the `uninstall` subcommand instead.
 
 ## Controls
 
