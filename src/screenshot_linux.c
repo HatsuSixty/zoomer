@@ -1,16 +1,16 @@
 #include "screenshot.h"
 
 #include <errno.h>
-#include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 static bool take_screenshot_wayland(const char* screenshot_file_path)
 {
     pid_t grim = fork();
     if (grim == 0) {
-        if (execlp("grim", "grim", "-t", "ppm", screenshot_file_path, NULL) == -1) {
+        if (execlp("grim", "grim", screenshot_file_path, NULL) == -1) {
             fprintf(stderr, "ERROR: could not execute `grim`: %s\n",
                     strerror(errno));
             exit(1);

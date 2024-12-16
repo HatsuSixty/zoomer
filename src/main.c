@@ -1,37 +1,16 @@
+#include <errno.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
 
 #include <raylib.h>
 #include <raymath.h>
 #include <rlgl.h>
 
 #include "screenshot.h"
-
-#ifdef __WIN32__
-#define SCREENSHOT_FILE_PATH                                                       \
-    ({                                                                             \
-        const char* temp_folder = getenv("TEMP");                                  \
-        const size_t temp_folder_len = strlen(temp_folder);                        \
-                                                                                   \
-        const char* slash_file_name = "\\zoomer_screenshot.bmp";                   \
-        const size_t slash_file_name_len = strlen(slash_file_name);                \
-                                                                                   \
-        const size_t full_path_len = temp_folder_len + slash_file_name_len;        \
-        char* full_path = alloca(full_path_len + 1);                               \
-        memcpy(full_path, temp_folder, temp_folder_len);                           \
-        memcpy(full_path + temp_folder_len, slash_file_name, slash_file_name_len); \
-        full_path[full_path_len] = '\0';                                           \
-                                                                                   \
-        full_path;                                                                 \
-    })
-#else
-#define SCREENSHOT_FILE_PATH "/tmp/zoomer_screenshot.png"
-#endif
 
 #define LERP_AMOUNT 5.f
 
@@ -56,6 +35,27 @@ static void draw_circle_lines(Vector2 center, float radius, Color color, int thi
 
 int main(void)
 {
+#ifdef __WIN32__
+    const char* SCREENSHOT_FILE_PATH;
+    {
+        const char* temp_folder = getenv("TEMP");
+        const size_t temp_folder_len = strlen(temp_folder);
+
+        const char* slash_file_name = "\\zoomer_screenshot.bmp";
+        const size_t slash_file_name_len = strlen(slash_file_name);
+
+        const size_t full_path_len = temp_folder_len + slash_file_name_len;
+        char* full_path = alloca(full_path_len + 1);
+        memcpy(full_path, temp_folder, temp_folder_len);
+        memcpy(full_path + temp_folder_len, slash_file_name, slash_file_name_len);
+        full_path[full_path_len] = '\0';
+
+        SCREENSHOT_FILE_PATH = full_path;
+    }
+#else
+    const char* SCREENSHOT_FILE_PATH = "/tmp/zoomer_screenshot.png";
+#endif
+
     if (!take_screenshot(SCREENSHOT_FILE_PATH)) {
         fprintf(stderr, "ERROR: failed to take screenshot\n");
         return 1;
